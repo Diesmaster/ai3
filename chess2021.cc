@@ -555,6 +555,7 @@ void Chess::MCwhitemove (int maxgamelength, int playouts) {
   int counter = 0;
   int highscore = scores[0];
   for(int x = 1; x < numberofwhitemoves(); x++){
+    std::cout << scores[x] << std::endl;
     if(highscore < scores[x]){
       highscore = scores[x];
       counter = x;
@@ -597,16 +598,16 @@ int Chess::MCwhitefakemoves(int maxgamelength, int playouts, int bestmove){
     }//while
     if(themove == 3){
       score = score + (100/playouts);
-      score = score - (neperd.countmoves/playouts);
+      //score = score - (10*neperd.countmoves/playouts);
       //std::cout << "winning" << endl;
     }else if(themove == 2){
       //score = score - ((100*neperd.countmoves)/playouts);
       //score = score - (100000/playouts);
-        score = score - (100/playouts);
+        score = score - (1/playouts);
     }else{
       //score = score - ((10*neperd.countmoves)/playouts);
       //score = score - (1000/playouts);
-        score = score - (100/playouts);
+        score = score - (1/playouts);
     }
   }
 
