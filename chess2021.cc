@@ -597,9 +597,10 @@ int Chess::MCwhitefakemoves(int maxgamelength, int playouts, int bestmove){
     }//while
     if(themove == 3){
       score = score + (10000/playouts);
-      score = score - (neperd.countmoves/playouts);
+      //score = score - (neperd.countmoves/playouts);
+      //std::cout << "winning" << endl;
     }else{
-      score = score - (neperd.countmoves/playouts);
+      score = score - ((100*neperd.countmoves)/playouts);
     }
   }
 
