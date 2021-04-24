@@ -3,13 +3,13 @@
 // C++ program to play simple chess:
 // white king (WK) and white queen/rook (WQ) against black king (BK)
 // Compile: g++ -Wall -Wextra -O2 -o chess chess2021.cc
-// Run:     ./chess <thesize> <simulations> <maxgamelength> 
+// Run:     ./chess <thesize> <simulations> <maxgamelength>
 //                  <depth> <gametypeW> <gametypeB> [Q|R] <print> <seed>
 //          thesize: number of rows = columns of the game board
 //          simulations: number of games played
 //          maxgamelength: game is tied after this number of moves
 //          depth: for gametree in Minimax
-//          gametypeW: 0 white random; 1 pure Monte Carlo; 
+//          gametypeW: 0 white random; 1 pure Monte Carlo;
 //                     2 Minimax; 3 alpha-beta;
 //          gametypeB: 0 black random; 1 try to capture queen;
 //                     2 seek king mobility
@@ -37,6 +37,8 @@ class Chess {
     bool whoistomove;    // who is to move? (true: white)
     int countmoves;      // number of moves so far
     bool queenorrook;    // true: white queen; false: white rook
+    int maxgamelength2;
+    int gametypeB2;
     static int thecalls; // calls to evaluate
     // member functions, see below for comments
     Chess ( );
@@ -60,13 +62,15 @@ class Chess {
     void dowhitequeenmove (int k);
     void dowhitemove (int k);
     void doblackkingmove (int k);
-    int playthegame (int maxgamelength, int depth, bool print, 
+    int playthegame (int maxgamelength, int depth, bool print,
 		     int & nrmoves, int gametypeW, int gametypeB);
     void randomwhitemove ( );
+    void copyBord(Chess & neperd);
     //=============================================================
     void MCwhitemove (int maxgamelength, int playouts);
+    int MCwhitefakemoves (int maxgamelength, int playouts, int bestmove);
     int Minimaxvalue (int depth, int maxgamelength, int & bestmove);
-    int MinimaxvalueAlphaBeta (int depth, int maxgamelength, 
+    int MinimaxvalueAlphaBeta (int depth, int maxgamelength,
 		               int & bestmove, int alpha, int beta);
     int evaluate ( );
 };//Chess
@@ -99,7 +103,7 @@ void Chess::reset (int somesize, bool qor) {
   do {
     xBK = rand ( ) % thesize + 1;
     yBK = rand ( ) % thesize + 1;
-  } while ( xBK - xWK <= 1 && xWK - xBK <= 1 
+  } while ( xBK - xWK <= 1 && xWK - xBK <= 1
             && yBK - yWK <= 1 && yWK - yBK <= 1 );
   do {
     xWQ = rand ( ) % thesize + 1;
@@ -149,18 +153,18 @@ bool Chess::canwhitequeenreach (int i, int j) {
     return false;
   if ( i != xWQ && j != yWQ && i + j != xWQ + yWQ && i - j != xWQ - yWQ )
     return false;
-  if ( i == xWQ && i == xWK 
+  if ( i == xWQ && i == xWK
        && ( ( yWQ < yWK && yWK < j ) || ( j < yWK && yWK < yWQ ) ) )
     return false;
-  if ( j == yWQ && j == yWK 
+  if ( j == yWQ && j == yWK
        && ( ( xWQ < xWK && xWK < i ) || ( i < xWK && xWK < xWQ ) ) )
     return false;
-  if ( i + j == xWQ + yWQ && i + j == xWK + yWK 
-       && ( ( xWQ - yWQ < xWK - yWK && xWK - yWK < i - j ) 
+  if ( i + j == xWQ + yWQ && i + j == xWK + yWK
+       && ( ( xWQ - yWQ < xWK - yWK && xWK - yWK < i - j )
             || ( i - j < xWK - yWK && xWK - yWK < xWQ - yWQ ) ) )
     return false;
-  if ( i - j == xWQ - yWQ && i - j == xWK - yWK 
-       && ( ( xWQ + yWQ < xWK + yWK && xWK + yWK < i + j ) 
+  if ( i - j == xWQ - yWQ && i - j == xWK - yWK
+       && ( ( xWQ + yWQ < xWK + yWK && xWK + yWK < i + j )
             || ( i + j < xWK + yWK && xWK + yWK < xWQ + yWQ ) ) )
     return false;
   return true;
@@ -172,10 +176,10 @@ bool Chess::canwhiterookreach (int i, int j) {
     return false;
   if ( i != xWQ && j != yWQ )
     return false;
-  if ( i == xWQ && i == xWK 
+  if ( i == xWQ && i == xWK
        && ( ( yWQ < yWK && yWK < j ) || ( j < yWK && yWK < yWQ ) ) )
     return false;
-  if ( j == yWQ && j == yWK 
+  if ( j == yWQ && j == yWK
        && ( ( xWQ < xWK && xWK < i ) || ( i < xWK && xWK < xWQ ) ) )
     return false;
   return true;
@@ -497,6 +501,8 @@ int Chess::playthegame (int maxgamelength, int depth, bool print,
 		        int & nrmoves, int gametypeW, int gametypeB) {
   int themove = 3;
   int bestmove;
+  this->maxgamelength2 = maxgamelength;
+  this->gametypeB2 = gametypeB;
   if ( print ) {
     printboard ( );
   }//if
@@ -524,7 +530,7 @@ int Chess::playthegame (int maxgamelength, int depth, bool print,
       }//if
     }//if
     else {
-      themove = blackmove (gametypeB); 
+      themove = blackmove (gametypeB);
       if ( themove > 1 && print ) {
         printboard ( );
       }//if
@@ -539,8 +545,66 @@ int Chess::playthegame (int maxgamelength, int depth, bool print,
 // do one pure Monte Carlo (MC) move for white
 // playouts random games (of maxgamelength) per candidate move
 void Chess::MCwhitemove (int maxgamelength, int playouts) {
-  // TODO
+  //queen daarna king
+  int scores[numberofwhitemoves()];
+
+  for(int x = 0; x < numberofwhitemoves(); x++){
+    scores[x] = MCwhitefakemoves(maxgamelength, playouts, x);
+  }
+
+  int counter = 0;
+  int highscore = scores[0];
+  for(int x = 1; x < numberofwhitemoves(); x++){
+    if(highscore < scores[x]){
+      highscore = scores[x];
+      counter = x;
+    }
+  }
+
+  dowhitemove(counter);
 }//Chess::MCwhitemove
+
+void Chess::copyBord(Chess & neperd){
+  neperd.thesize = this->thesize;
+  neperd.xBK = this->xBK;
+  neperd.yBK = this->yBK;
+  neperd.xWK = this->xWK;
+  neperd.yWK = this->yWK;        // position of white king
+  neperd.xWQ = this->xWQ;
+  neperd.yWQ = this->yWK;        // position of white queen (or rook)
+  neperd.queencaptured = this->queencaptured;  // is white queen captured?
+  neperd.maxgamelength2 = this->maxgamelength2;
+  neperd.whoistomove = this->whoistomove;    // who is to move? (true: white)
+  neperd.countmoves = this->countmoves;      // number of moves so far
+  neperd.queenorrook = this->queenorrook;    // true: white queen; false: white rook
+}
+
+int Chess::MCwhitefakemoves(int maxgamelength, int playouts, int bestmove){
+  Chess neperd;
+  float score = 0;
+  this->copyBord(neperd);
+  neperd.dowhitemove(bestmove);
+  int themove = 3;
+  for(int x = 0; x < playouts; x++){
+    while (themove == 3 && neperd.countmoves < neperd.maxgamelength2 ) {
+      if ( neperd.whoistomove ) {
+  	     neperd.randomwhitemove( );
+      }//if
+      else {
+        themove = neperd.blackmove(neperd.gametypeB2);
+      }//else
+      neperd.countmoves++;
+    }//while
+    if(themove == 3){
+      score = score + (10000/playouts);
+      score = score - (neperd.countmoves/playouts);
+    }else{
+      score = score - (neperd.countmoves/playouts);
+    }
+  }
+
+  return score;
+}
 
 // compute and return Minimax value, including best move
 // games of maxgamelength; look depth moves ahead
@@ -625,4 +689,3 @@ int main (int argc, char* argv[ ]) {
   cout << "And " << Chess::thecalls << " calls to evaluate." << endl << endl;
   return 0;
 }//main
-
