@@ -513,7 +513,7 @@ int Chess::playthegame (int maxgamelength, int depth, bool print,
 	  randomwhitemove ( );
 	  break;
         case 1: // pure Monte Carlo
-          MCwhitemove (maxgamelength,100);
+          MCwhitemove (maxgamelength, depth);
 	  break;
         case 2: // Minimax
           Minimaxvalue (depth,maxgamelength,bestmove); // ignore return value!
@@ -596,11 +596,17 @@ int Chess::MCwhitefakemoves(int maxgamelength, int playouts, int bestmove){
       neperd.countmoves++;
     }//while
     if(themove == 3){
-      score = score + (10000/playouts);
-      //score = score - (neperd.countmoves/playouts);
+      score = score + (100/playouts);
+      score = score - (neperd.countmoves/playouts);
       //std::cout << "winning" << endl;
+    }else if(themove == 2){
+      //score = score - ((100*neperd.countmoves)/playouts);
+      //score = score - (100000/playouts);
+        score = score - (100/playouts);
     }else{
-      score = score - ((100*neperd.countmoves)/playouts);
+      //score = score - ((10*neperd.countmoves)/playouts);
+      //score = score - (1000/playouts);
+        score = score - (100/playouts);
     }
   }
 
