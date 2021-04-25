@@ -58,6 +58,7 @@ class Chess {
     int blackmove (int gametypeB);
     void humanwhitemove ( );
     void humanblackmove ( );
+    bool willqueenbecaptured();
     void dowhitekingmove (int k);
     void dowhitequeenmove (int k);
     void dowhitemove (int k);
@@ -515,9 +516,11 @@ int Chess::playthegame (int maxgamelength, int depth, bool print,
         case 1: // pure Monte Carlo
           MCwhitemove (maxgamelength, depth);
 	  break;
-        case 2: // Minimax
-          Minimaxvalue (depth,maxgamelength,bestmove); // ignore return value!
-	  dowhitemove (bestmove);
+        case 2: { // Minimax
+        int score = Minimaxvalue (depth,maxgamelength,bestmove); // ignore return value!
+        std::cout << score << std::endl;
+    dowhitemove (bestmove);
+    }
 	  break;
         case 3: // alpha-beta
 	  MinimaxvalueAlphaBeta (depth,maxgamelength,bestmove,-2000000000,2000000000);
@@ -597,28 +600,102 @@ int Chess::MCwhitefakemoves(int maxgamelength, int playouts, int bestmove){
       neperd.countmoves++;
     }//while
     if(themove == 3){
-      score = score + (100/playouts);
+      score = score + (100);
       //score = score - (10*neperd.countmoves/playouts);
       //std::cout << "winning" << endl;
     }else if(themove == 2){
       //score = score - ((100*neperd.countmoves)/playouts);
       //score = score - (100000/playouts);
-        score = score - (1/playouts);
+        score = score - (1);
     }else{
       //score = score - ((10*neperd.countmoves)/playouts);
       //score = score - (1000/playouts);
-        score = score - (1/playouts);
+        score = score - (1);
     }
   }
 
   return score;
 }
 
+bool Chess::willqueenbecaptured(){
+  int i, j;
+  for ( i = -1; i <= 1; i++ )
+    for ( j = -1; j <= 1; j++ )
+      if ( legalforblackking (xBK+i,yBK+j) ) {
+        if ( xBK+i == xWQ && yBK+j == yWQ ) {
+              return true;
+          }
+        }
+      return false;
+}
+
 // compute and return Minimax value, including best move
 // games of maxgamelength; look depth moves ahead
 int Chess::Minimaxvalue (int depth, int maxgamelength, int & bestmove) {
-  // TODO
-  return 0;
+
+
+  int numberofmoves = 0;
+  if((depth == 0) ||
+    (countmoves > maxgamelength) ||
+    (this->checkmate() == true) ||
+    (this->numberofblackmoves ( ) == 0 ) ||
+    (this->queencaptured == true)
+    )
+    {
+      return this->evaluate();
+  }
+  if(this->whoistomove == false){
+    //this->dowhitemove(bestmove);
+    numberofmoves = this->numberofblackmoves();
+  }else{
+    //this->doblackkingmove(bestmove);
+    numberofmoves = this->numberofwhitemoves();
+  }
+
+  int scores[numberofmoves];
+    for(int x = 0; x < numberofmoves; x++){
+      scores[x] = 0;
+    }
+
+  for(int x = 0; x < numberofmoves; x++){
+    Chess neperd;
+    this->copyBord(neperd);
+
+    if(neperd.whoistomove == true){
+      neperd.dowhitemove(x);
+      //numberofmoves = numberofblackmoves();
+    }else{
+      neperd.doblackkingmove(x);
+      //numberofmoves = numberofwhitemoves();
+    }
+    scores[x] = neperd.Minimaxvalue(depth-1, maxgamelength, bestmove);
+  }
+
+  int score = scores[0];
+  int move = 0;
+
+  if(this->whoistomove == true){
+    for(int x = 1; x < numberofmoves; x++){
+      //std::cout << scores[x] << "   " << x  << "dept:" << depth << std::endl;
+      if(score < scores[x]){
+        score = scores[x];
+        move = x;
+      }
+    }
+  }else{
+    for(int x = 1; x < numberofmoves; x++){
+      //std::cout << scores[x] << " zwart  " << x << "dept:" << depth << std::endl;
+
+      if(score > scores[x]){
+        score = scores[x];
+        move = x;
+      }
+    }
+  }
+
+  bestmove = move;
+  std::cout << score << " return  " << move << "dept:" << depth << std::endl;
+  return score;
 }//Chess::Minimaxvalue
 
 // compute and return Minimax value, alpha-beta pruning, including best move
@@ -632,9 +709,22 @@ int Chess::MinimaxvalueAlphaBeta (int depth, int maxgamelength, int & bestmove,
 // evaluate quality of position, large if good for white
 // not a leaf
 int Chess::evaluate ( ) {
-  // TODO
+  if( queencaptured == true ){
+    return -1000;
+  }
+  if( willqueenbecaptured() == true){
+    return -1000;
+  }
+  if(checkmate() == true){
+    return 1000; //-10*countmoves;
+  }
+  if(incheck(xBK,yBK) == true){
+    int returnval = 100 + (900-(100*numberofblackmoves()));
+    return returnval;
+  }
+
   thecalls++;
-  return 0;
+  return (900-(100*numberofblackmoves()));//countmoves*-10;
 }//Chess::evaluate
 
 // main program
