@@ -499,7 +499,7 @@ void Chess::printboard ( ) {
 int Chess::playthegame (int maxgamelength, int depth, bool print,
 		        int & nrmoves, int gametypeW, int gametypeB) {
   int themove = 3;
-  int bestmove;
+  int bestmove = 1;
   this->maxgamelength2 = maxgamelength;
   this->gametypeB2 = gametypeB;
   if ( print ) {
@@ -752,6 +752,7 @@ if(this->whoistomove == false){
       }
     }
     /**/
+    //std::cout << bestmove << std::endl;
     bestmove = move;
     return alpha;
     }else{
@@ -765,7 +766,7 @@ if(this->whoistomove == false){
 
     }
     /**/
-
+    //std::cout << bestmove << std::endl;
     bestmove = move;
     return beta;
   }
