@@ -587,7 +587,7 @@ int Chess::MCwhitefakemoves(int maxgamelength, int playouts, int bestmove){
   neperd.dowhitemove(bestmove);
   int themove = 3;
   for(int x = 0; x < playouts; x++){
-    while (themove == 3 && neperd.countmoves < neperd.maxgamelength2 ) {
+    while (themove == 3 && neperd.countmoves < neperd.maxgamelength2 && !neperd.checkmate() ) {
       if ( neperd.whoistomove ) {
   	     neperd.randomwhitemove( );
       }//if
@@ -597,18 +597,25 @@ int Chess::MCwhitefakemoves(int maxgamelength, int playouts, int bestmove){
       neperd.countmoves++;
     }//while
     if(themove == 3){
-      score = score + (100);
+      score = score + (0);
       //score = score - (10*neperd.countmoves/playouts);
       //std::cout << "winning" << endl;
     }else if(themove == 2){
       //score = score - ((100*neperd.countmoves)/playouts);
       //score = score - (100000/playouts);
-        score = score - (1);
+        score = score - (100);
     }else{
       //score = score - ((10*neperd.countmoves)/playouts);
       //score = score - (1000/playouts);
-        score = score - (1);
+        score = score - (100);
     }
+
+    if(neperd.countmoves >= neperd.maxgamelength2){
+      return score = score - 100;
+    }else if(neperd.checkmate()){
+      return score = score + 1000;
+    }
+
   }
 
   return score;
