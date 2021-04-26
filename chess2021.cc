@@ -515,7 +515,8 @@ int Chess::playthegame (int maxgamelength, int depth, bool print,
           MCwhitemove (maxgamelength,100);
 	  break;
         case 2:{ // Minimax
-           Minimaxvalue (depth,maxgamelength,bestmove); // ignore return value!
+           int value = Minimaxvalue (depth,maxgamelength,bestmove); // ignore return value!
+           std::cout << value << std::endl;
 	  dowhitemove (bestmove);
   }
 	  break;
@@ -786,20 +787,26 @@ if(this->whoistomove == false){
 // evaluate quality of position, large if good for white
 // not a leaf
 int Chess::evaluate ( ) {
-
+  int minusmoves = countmoves*-1;
   if( this->queencaptured == true){
-    return -1000;
+    return -2000 + minusmoves;
   }
   if( ((checkmate() == true)&& (!whoistomove)) ){
-    return 1200; //-10*countmoves;
+    return 4000 + minusmoves; //-10*countmoves;
   }
   if(incheck(xBK,yBK) == true){
-    int returnval = 100 + (900-(100*numberofblackmoves()));
-    return returnval;
+    int returnval = 500 + (900-(100*numberofblackmoves()));
+    return returnval + minusmoves;
+  }
+  if( (numberofblackmoves() == 0) && !incheck(xBK,yBK) ){
+    return -1500 + minusmoves;
+  }
+  if(countmoves > maxgamelength2){
+    return -2000;
   }
 
   thecalls++;
-  return (900-(100*numberofblackmoves()));//countmoves*-10;
+  return (500-(100*numberofblackmoves())) + minusmoves;//countmoves*-10;
 }//Chess::evaluate
 
 // main program
