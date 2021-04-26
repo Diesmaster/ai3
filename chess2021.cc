@@ -520,10 +520,12 @@ int Chess::playthegame (int maxgamelength, int depth, bool print,
 	  dowhitemove (bestmove);
   }
 	  break;
-        case 3: // alpha-beta
-	  MinimaxvalueAlphaBeta (depth,maxgamelength,bestmove,-2000000000,2000000000);
+        case 3:{ // alpha-beta
+	  int value = MinimaxvalueAlphaBeta (depth,maxgamelength,bestmove,-2000000000,2000000000);
+    std::cout << value << " ww " << bestmove << std::endl;
           // ignore return value!
 	  dowhitemove (bestmove);
+  }
 	  break;
       }//switch
       if ( print ) {
@@ -738,7 +740,7 @@ if(this->whoistomove == false){
     }else{
       neperd.doblackkingmove(x);
       scores[x] = neperd.MinimaxvalueAlphaBeta(depth-1, maxgamelength, bestmove, alpha, beta);
-      if(beta >= alpha){
+      if(beta <= alpha){
         return alpha;
       }
       //numberofmoves = numberofwhitemoves();
