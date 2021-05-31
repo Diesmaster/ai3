@@ -516,7 +516,7 @@ int Chess::playthegame (int maxgamelength, int depth, bool print,
 	  break;
         case 2:{ // Minimax
            int value = Minimaxvalue (depth,maxgamelength,bestmove); // ignore return value!
-           std::cout << value << std::endl;
+           //std::cout << value << std::endl;
 	  dowhitemove (bestmove);
   }
 	  break;
@@ -712,11 +712,11 @@ if((depth == 0) ||
 }
 
 if(this->whoistomove == false){
-  //this->dowhitemove(bestmove);
+  this->dowhitemove(bestmove);
   numberofmoves = this->numberofblackmoves();
   //std::cout << "number of black moves: " <<  numberofmoves <<std::endl;
 }else{
-  //this->doblackkingmove(bestmove);
+  this->doblackkingmove(bestmove);
   numberofmoves = this->numberofwhitemoves();
   //std::cout << depth << " number of white moves: " <<  numberofmoves <<std::endl;
 }
@@ -800,15 +800,11 @@ int Chess::evaluate ( ) {
     int returnval = 500 + (900-(100*numberofblackmoves()));
     return returnval + minusmoves;
   }
-  if( (numberofblackmoves() == 0) && !incheck(xBK,yBK) ){
-    return -1500 + minusmoves;
-  }
   if(countmoves > maxgamelength2){
     return -2000;
   }
 
   thecalls++;
-  return (500-(100*numberofblackmoves())) + minusmoves;//countmoves*-10;
 }//Chess::evaluate
 
 // main program
