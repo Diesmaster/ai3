@@ -630,7 +630,7 @@ int Chess::MCwhitefakemoves(int maxgamelength, int playouts, int bestmove){
 // games of maxgamelength; look depth moves ahead
 int Chess::Minimaxvalue (int depth, int maxgamelength, int & bestmove) {
 int numberofmoves = 0;
-if((depth == 0) ||
+if(
   (countmoves > maxgamelength) ||
   ((this->checkmate() == true) && (!whoistomove)) ||
   (this->numberofblackmoves ( ) == 0 ) ||
@@ -638,6 +638,8 @@ if((depth == 0) ||
   )
   {
     return this->evaluate();
+}else if (depth == 0){
+  return -2000;
 }
 
 if(this->whoistomove == false){
@@ -701,7 +703,7 @@ if(this->whoistomove == false){
 int Chess::MinimaxvalueAlphaBeta (int depth, int maxgamelength, int & bestmove,
 int alpha, int beta) {
 int numberofmoves = 0;
-if((depth == 0) ||
+if(
   (countmoves > maxgamelength) ||
   ((this->checkmate() == true) && (!whoistomove)) ||
   (this->numberofblackmoves ( ) == 0 ) ||
@@ -709,6 +711,8 @@ if((depth == 0) ||
   )
   {
     return this->evaluate();
+}else if (depth == 0){
+  return -2000;
 }
 
 if(this->whoistomove == false){
