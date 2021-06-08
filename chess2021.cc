@@ -630,16 +630,14 @@ int Chess::MCwhitefakemoves(int maxgamelength, int playouts, int bestmove){
 // games of maxgamelength; look depth moves ahead
 int Chess::Minimaxvalue (int depth, int maxgamelength, int & bestmove) {
 int numberofmoves = 0;
-if(
-  (countmoves > maxgamelength) ||
-  ((this->checkmate() == true) && (!whoistomove)) ||
-  (this->numberofblackmoves ( ) == 0 ) ||
-  (this->queencaptured == true)
-  )
-  {
-    return this->evaluate();
-}else if (depth == 0){
+if( this->queencaptured == true){
   return -2000;
+}
+if( ((checkmate() == true)&& (!whoistomove)) ){
+  return 4000; //-10*countmoves;
+}
+if (depth == 0){
+  return this->evaluate();
 }
 
 if(this->whoistomove == false){
@@ -703,16 +701,14 @@ if(this->whoistomove == false){
 int Chess::MinimaxvalueAlphaBeta (int depth, int maxgamelength, int & bestmove,
 int alpha, int beta) {
 int numberofmoves = 0;
-if(
-  (countmoves > maxgamelength) ||
-  ((this->checkmate() == true) && (!whoistomove)) ||
-  (this->numberofblackmoves ( ) == 0 ) ||
-  (this->queencaptured == true)
-  )
-  {
-    return this->evaluate();
-}else if (depth == 0){
-  return -2000;
+if( this->queencaptured == true){
+  return -4000-countmoves*10;
+}
+if( ((checkmate() == true)&& (!whoistomove)) ){
+  return 4000-countmoves*10; //-10*countmoves;
+}
+if (depth == 0){
+  return this->evaluate();
 }
 
 if(this->whoistomove == false){
@@ -793,22 +789,13 @@ if(this->whoistomove == false){
 // evaluate quality of position, large if good for white
 // not a leaf
 int Chess::evaluate ( ) {
-  int minusmoves = countmoves*-1;
-  if( this->queencaptured == true){
-    return -2000 + minusmoves;
-  }
-  if( ((checkmate() == true)&& (!whoistomove)) ){
-    return 4000 + minusmoves; //-10*countmoves;
-  }
-  if(incheck(xBK,yBK) == true){
-    int returnval = 500 + (900-(100*numberofblackmoves()));
-    return returnval + minusmoves;
-  }
-  if(countmoves > maxgamelength2){
-    return -2000;
-  }
-
   thecalls++;
+
+  if(incheck(xBK,yBK) == true){
+    int returnval = 500 + (900-(100*numberofblackmoves()))-countmoves;
+    return returnval;
+  }
+  return (900-(100*numberofblackmoves()))-countmoves;
 }//Chess::evaluate
 
 // main program
