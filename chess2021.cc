@@ -636,6 +636,9 @@ if( this->queencaptured == true){
 if( ((checkmate() == true)&& (!whoistomove)) ){
   return 4000; //-10*countmoves;
 }
+if(countmoves > maxgamelength2){
+   return -2000;
+ }
 if (depth == 0){
   return this->evaluate();
 }
@@ -710,7 +713,9 @@ if( ((checkmate() == true)&& (!whoistomove)) ){
 if (depth == 0){
   return this->evaluate();
 }
-
+if(countmoves > maxgamelength2){
+   return -2000;
+ }
 if(this->whoistomove == false){
   this->dowhitemove(bestmove);
   numberofmoves = this->numberofblackmoves();
