@@ -72,8 +72,8 @@ class Chess {
     int MinimaxvalueAlphaBeta (int depth, int maxgamelength,
 		               int & bestmove, int alpha, int beta);
     int evaluate ( );
-    int minWaarde(int depth, int maxgamelength, int & bestmove, int alpha, int beta);
-    int maxWaarde(int depth, int maxgamelength, int & bestmove, int alpha, int beta);
+    int minWaarde(int depth, int maxgamelength,  int alpha, int beta);
+    int maxWaarde(int depth, int maxgamelength,  int alpha, int beta);
 };//Chess
 
 //=================================================================
@@ -704,12 +704,45 @@ int Chess::MinimaxvalueAlphaBeta (int depth, int maxgamelength, int & bestmove,
 int alpha, int beta) {
 
 
-  return maxWaarde(depth, maxgamelength, bestmove, alpha, beta);
+  if( this->queencaptured == true){
+      return -4000-countmoves*10;
+  }
+  if( ((checkmate() == true)&& (!whoistomove)) ){
+      return 4000-countmoves*10; //-10*countmoves;
+  }
+  if(countmoves > maxgamelength2){
+      return -2000;
+  }
+  if( this->numberofwhitemoves() == 0){
+    return -1000;
+  }
+  if (depth == 0){
+      return this->evaluate();
+  }
 
-    //return maxWaarde(depth, maxgamelength, bestmove, alpha, beta);
+  int numberofmoves = this->numberofwhitemoves();
+
+  //int scores[numberofmoves];
+  int bestmoveometer = -20000000;
+
+      for(int x = 0; x < numberofmoves; x++){
+          Chess neperd;
+          this->copyBord(neperd);
+          neperd.dowhitemove(x);
+          int score = neperd.minWaarde(depth-1, maxgamelength, alpha, beta);
+          if(score > bestmoveometer){
+            bestmoveometer = score;
+            bestmove = x;
+          }
+          if(score > alpha){
+            alpha = score;
+          }
+      }
+
+  return alpha;
 }//Chess::MinimaxvalueAlphaBeta
 
-int Chess::minWaarde (int depth, int maxgamelength, int & bestmove, int alpha, int beta) {
+int Chess::minWaarde (int depth, int maxgamelength, int alpha, int beta) {
   if( this->queencaptured == true){
       return -4000-countmoves*10;
   }
@@ -735,10 +768,12 @@ int Chess::minWaarde (int depth, int maxgamelength, int & bestmove, int alpha, i
       Chess neperd;
       this->copyBord(neperd);
       neperd.doblackkingmove(x);
-      int score = neperd.maxWaarde(depth-1, maxgamelength, bestmove, alpha, beta);
+      int score = neperd.maxWaarde(depth-1, maxgamelength, alpha, beta);
       if(score < beta){
         beta = score;
-        bestmove = x;
+      }
+      if(beta <= alpha){
+        return alpha;
       }
   }
 
@@ -767,7 +802,7 @@ return beta;
   return beta;*/
 }
 
-int Chess::maxWaarde (int depth, int maxgamelength, int & bestmove, int alpha, int beta) {
+int Chess::maxWaarde (int depth, int maxgamelength, int alpha, int beta) {
 
   if( this->queencaptured == true){
       return -4000-countmoves*10;
@@ -788,24 +823,29 @@ int Chess::maxWaarde (int depth, int maxgamelength, int & bestmove, int alpha, i
   int numberofmoves = this->numberofwhitemoves();
 
   //int scores[numberofmoves];
-  int finalscore = -20000000;
+  int bestmoveometer = -20000000;
 
       for(int x = 0; x < numberofmoves; x++){
           Chess neperd;
           this->copyBord(neperd);
           neperd.dowhitemove(x);
-          int score = neperd.minWaarde(depth-1, maxgamelength, bestmove, alpha, beta);
-          if(score > finalscore){
-            finalscore = score;
-            bestmove = x;
-          }
+          int score = neperd.minWaarde(depth-1, maxgamelength, alpha, beta);
+        //  if(score > bestmoveometer){
+        //    bestmoveometer = score;
+        //    bestmove = x;
+        //  }
           if(score > alpha){
             alpha = score;
-            bestmove = x;
+            //bestmove = x;
           }
-          if(depth == 3){
-          std::cout << depth << ", " << score << ", " << finalscore << ", " << alpha <<endl;
+          if(alpha >= beta){
+          std::cout << alpha <<", testw2" << std::endl;
+            return beta;
           }
+
+          //if(depth == 3){
+          //std::cout << depth << ", " << score << ", " << finalscore << ", " << alpha <<endl;
+          //}
       }
 
   return alpha;
