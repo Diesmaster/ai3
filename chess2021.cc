@@ -643,6 +643,9 @@ if( ((checkmate() == true)&& (!whoistomove)) ){
 if(countmoves > maxgamelength2){
     return -2000;
 }
+if( (this->numberofblackmoves() == 0) && (this->whoistomove == false) ){
+  return -1000;
+}
 if (depth == 0){
     return this->evaluate();
 }
