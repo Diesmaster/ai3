@@ -523,7 +523,7 @@ int Chess::playthegame (int maxgamelength, int depth, bool print,
   }
 	  break;
         case 3:{ // alpha-beta
-	  MinimaxvalueAlphaBeta (depth,maxgamelength,bestmove,-20000,20000);
+	  MinimaxvalueAlphaBeta (depth,maxgamelength,bestmove,-20000000,2000000);
     //std::cout << value << " ww " << bestmove << std::endl;
           // ignore return value!
     std::cout << "bestmove: " << bestmove << std::endl;
@@ -631,70 +631,71 @@ int Chess::MCwhitefakemoves(int maxgamelength, int playouts, int bestmove){
 
 // compute and return Minimax value, including best move
 // games of maxgamelength; look depth moves ahead
+
 int Chess::Minimaxvalue (int depth, int maxgamelength, int & bestmove) {
-int numberofmoves = 0;
+  int numberofmoves = 0;
 
-if( this->queencaptured == true){
-    return -4000-countmoves*10;
-}
-if( ((checkmate() == true)&& (!whoistomove)) ){
-    return 4000-countmoves*10; //-10*countmoves;
-}
-if(countmoves > maxgamelength2){
+  if( this->queencaptured == true){
+      return -4000-countmoves*10;
+  }
+  if( ((checkmate() == true)&& (!whoistomove)) ){
+      return 4000-countmoves*10; //-10*countmoves;
+  }
+  if(( this->numberofblackmoves() == 0) && (!whoistomove)){
     return -2000;
-}
-if( (this->numberofblackmoves() == 0) && (this->whoistomove == false) ){
-  return -1000;
-}
-if (depth == 0){
-    return this->evaluate();
-}
-
-    if(this->whoistomove == false){
-      numberofmoves = this->numberofblackmoves();
-    }else{
-      numberofmoves = this->numberofwhitemoves();
-    }
-    int scores[numberofmoves];
-    if(this->whoistomove == true){
-        //best = -2000000000;
-        for(int x = 0; x < numberofmoves; x++){
-            Chess neperd;
-            this->copyBord(neperd);
-            neperd.dowhitemove(x);
-            scores[x] = neperd.Minimaxvalue(depth-1, maxgamelength, bestmove);
-        }
-    }
-    else{
-        for(int x = 0; x < numberofmoves; x++){
-            Chess neperd;
-            this->copyBord(neperd);
-            neperd.doblackkingmove(x);
-            scores[x] = neperd.Minimaxvalue(depth-1, maxgamelength, bestmove);
-        }
-    }
-    int score = scores[0];
-    int move = 0;
-    if(this->whoistomove == true){
-      for(int x = 0; x < numberofmoves; x++){
-        //std::cout << scores[x] << "   " << x << std::endl;
-        if( scores[x] > score){
-          score = scores[x];
-          move = x;
-        }
-      }
+  }
+  if (depth == 0){
+      return this->evaluate();
+  }
+  if(countmoves > maxgamelength2){
+      return -2000;
+  }
+      if(this->whoistomove == false){
+        numberofmoves = this->numberofblackmoves();
       }else{
+        numberofmoves = this->numberofwhitemoves();
+      }
+      int scores[numberofmoves];
+      if(this->whoistomove == true){
+          //best = -2000000000;
+          for(int x = 0; x < numberofmoves; x++){
+              Chess neperd;
+              this->copyBord(neperd);
+              neperd.dowhitemove(x);
+              scores[x] = neperd.Minimaxvalue(depth-1, maxgamelength, bestmove);
+          }
+      }
+      else{
+          for(int x = 0; x < numberofmoves; x++){
+              Chess neperd;
+              this->copyBord(neperd);
+              neperd.doblackkingmove(x);
+              scores[x] = neperd.Minimaxvalue(depth-1, maxgamelength, bestmove);
+          }
+      }
+      int score = scores[0];
+      int move = 0;
+      if(this->whoistomove == true){
         for(int x = 0; x < numberofmoves; x++){
-          //std::cout << scores[x] << " zwart  " << x << std::endl;
-          if( scores[x] < score){
+          //std::cout << scores[x] << "   " << x << std::endl;
+          if( scores[x] > score){
             score = scores[x];
             move = x;
+          }
+        }
+        }else{
+          for(int x = 0; x < numberofmoves; x++){
+            //std::cout << scores[x] << " zwart  " << x << std::endl;
+            if( scores[x] < score){
+              score = scores[x];
+              move = x;
+          }
         }
       }
-    }
 
-    bestmove = move;
-    return score;
+      bestmove = move;
+      return score;
+
 }//Chess::Minimaxvalue
 
 // compute and return Minimax value, alpha-beta pruning, including best move
@@ -725,8 +726,26 @@ int Chess::minWaarde (int depth, int maxgamelength, int & bestmove, int alpha, i
       return this->evaluate();
   }
 
-
   int numberofmoves = this->numberofblackmoves();
+
+  int scores[numberofmoves];
+  int finalscore = 20000000;
+
+  for(int x = 0; x < numberofmoves; x++){
+      Chess neperd;
+      this->copyBord(neperd);
+      neperd.doblackkingmove(x);
+      int score = neperd.maxWaarde(depth-1, maxgamelength, bestmove, alpha, beta);
+      if(score < finalscore){
+        finalscore = score;
+        bestmove = x;
+      }
+  }
+
+
+return finalscore;
+
+  /*int numberofmoves = this->numberofblackmoves();
 
   for(int x = 0; x < numberofmoves; x++){
       Chess neperd;
@@ -745,10 +764,11 @@ int Chess::minWaarde (int depth, int maxgamelength, int & bestmove, int alpha, i
       //}
     }
 
-  return beta;
+  return beta;*/
 }
 
 int Chess::maxWaarde (int depth, int maxgamelength, int & bestmove, int alpha, int beta) {
+
   if( this->queencaptured == true){
       return -4000-countmoves*10;
   }
@@ -767,7 +787,22 @@ int Chess::maxWaarde (int depth, int maxgamelength, int & bestmove, int alpha, i
 
   int numberofmoves = this->numberofwhitemoves();
 
+  int scores[numberofmoves];
+  int finalscore = -20000000;
 
+      for(int x = 0; x < numberofmoves; x++){
+          Chess neperd;
+          this->copyBord(neperd);
+          neperd.dowhitemove(x);
+          int score = neperd.minWaarde(depth-1, maxgamelength, bestmove, alpha, beta);
+          if(score > finalscore){
+            finalscore = score;
+            bestmove = x;
+          }
+      }
+
+  return finalscore;
+/*
   for(int x = 0; x < numberofmoves; x++){
       Chess neperd;
       this->copyBord(neperd);
@@ -792,7 +827,7 @@ int Chess::maxWaarde (int depth, int maxgamelength, int & bestmove, int alpha, i
       //}
   }
 
-  return alpha;
+  return alpha;*/
 }
 
 
@@ -808,6 +843,7 @@ int Chess::evaluate ( ) {
 
   return (900-(100*numberofblackmoves()))-countmoves;
 }//Chess::evaluate
+
 
 // main program
 int main (int argc, char* argv[ ]) {
