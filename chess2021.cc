@@ -526,7 +526,7 @@ int Chess::playthegame (int maxgamelength, int depth, bool print,
 	  MinimaxvalueAlphaBeta (depth,maxgamelength,bestmove,-20000000,2000000);
     //std::cout << value << " ww " << bestmove << std::endl;
           // ignore return value!
-    std::cout << "bestmove: " << bestmove << std::endl;
+
 	  dowhitemove (bestmove);
   }
 	  break;
@@ -839,7 +839,6 @@ int Chess::maxWaarde (int depth, int maxgamelength, int alpha, int beta) {
             //bestmove = x;
           }
           if(alpha >= beta){
-          std::cout << alpha <<", testw2" << std::endl;
             return beta;
           }
 
