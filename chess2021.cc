@@ -787,7 +787,7 @@ int Chess::maxWaarde (int depth, int maxgamelength, int & bestmove, int alpha, i
 
   int numberofmoves = this->numberofwhitemoves();
 
-  int scores[numberofmoves];
+  //int scores[numberofmoves];
   int finalscore = -20000000;
 
       for(int x = 0; x < numberofmoves; x++){
@@ -799,9 +799,16 @@ int Chess::maxWaarde (int depth, int maxgamelength, int & bestmove, int alpha, i
             finalscore = score;
             bestmove = x;
           }
+          if(score > alpha){
+            alpha = score;
+            bestmove = x;
+          }
+          if(depth == 3){
+          std::cout << depth << ", " << score << ", " << finalscore << ", " << alpha <<endl;
+          }
       }
 
-  return finalscore;
+  return alpha;
 /*
   for(int x = 0; x < numberofmoves; x++){
       Chess neperd;
