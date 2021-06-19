@@ -729,21 +729,21 @@ int Chess::minWaarde (int depth, int maxgamelength, int & bestmove, int alpha, i
   int numberofmoves = this->numberofblackmoves();
 
   int scores[numberofmoves];
-  int finalscore = 20000000;
+  //int finalscore = 20000000;
 
   for(int x = 0; x < numberofmoves; x++){
       Chess neperd;
       this->copyBord(neperd);
       neperd.doblackkingmove(x);
       int score = neperd.maxWaarde(depth-1, maxgamelength, bestmove, alpha, beta);
-      if(score < finalscore){
-        finalscore = score;
+      if(score < beta){
+        beta = score;
         bestmove = x;
       }
   }
 
 
-return finalscore;
+return beta;
 
   /*int numberofmoves = this->numberofblackmoves();
 
